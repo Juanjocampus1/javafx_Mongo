@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.bson.Document;
 
@@ -30,23 +31,40 @@ public class HelloController {
     private TableColumn<User, String> passwordColumn;
 
     @FXML
-    protected void onHelloButtonClick() {
+    private TextField nameField;
+
+    @FXML
+    private TextField emailField;
+
+    @FXML
+    private TextField passwordField;
+
+    @FXML
+    protected void onAddUserButtonClick() {
         welcomeText.setText("Welcome to JavaFX Application!");
 
         MongoClient mongoClient = MongoClients.create("mongodb+srv://admin:admin@cluster0.uay2677.mongodb.net/");
         MongoDatabase database = mongoClient.getDatabase("test");
         MongoCollection<Document> collection = database.getCollection("usuario");
 
-        Document newUser = new Document("name", "Juan")
-                .append("email", "juan@example.com")
-                .append("password", "securepassword"); // Reemplaza estos valores con los datos del usuario que deseas insertar
+        String name = nameField.getText();
+        String email = emailField.getText();
+        String password = passwordField.getText();
+
+        Document newUser = new Document("name", name)
+                .append("email", email)
+                .append("password", password);
 
         collection.insertOne(newUser);
 
         // Realizar una consulta find y mostrar los resultados
         ObservableList<User> users = FXCollections.observableArrayList();
         for (Document doc : collection.find()) {
-            users.add(new User(doc.getString("name"), doc.getString("email"), doc.getString("password")));
+            users.add(new User(
+                    doc.getString("name"),
+                    doc.getString("email"),
+                    doc.getString("password")
+            ));
         }
 
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -54,5 +72,10 @@ public class HelloController {
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
 
         userTable.setItems(users);
+
+        // Limpiar los campos de texto
+        nameField.clear();
+        emailField.clear();
+        passwordField.clear();
     }
 }
